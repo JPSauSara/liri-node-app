@@ -28,7 +28,7 @@ const client = new twitter({
 }); 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!! REMOVE COUNT || CHANGE TO 20 !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-var params = { screen_name: 'juliehPaola', count: 5 };
+var params = { screen_name: 'juliehPaola', count: 20 };
 
 function getTweets() {
   client.get('statuses/user_timeline', params, function(error, tweets, response) {
