@@ -50,6 +50,32 @@ function getTweets() {
     // The song's name
     // A preview link of the song from Spotify
     // The album that the song is from
+var spotify = require('spotify');
+
+get: function(query, hollaback) // See http://developer.spotify.com/en/metadata-api/overview/ 
+
+
+function getSong() {
+module.exports = {
+     get: function(query, searchInput) {
+        
+        var opts = {
+            host: "api.spotify.com",
+            path: encodeURI(query),
+            method: "GET",
+            headers: { "Accept": "application/json" }
+        },
+        request = https.request(opts, makeResponse( searchInput ));
+        request.end();
+
+        request.on('error', function (err) {
+            hollaback (err, {});
+        });
+    }
+
+
+}
+};
 
 
 // ===================== IMDB COMMAND: movie-this =====================
@@ -65,20 +91,6 @@ function getTweets() {
     //    * Rotten Tomatoes URL.
 
 var request = require("request");
-
-// ON NPM request PKG documentation :
-    //request('http://www.google.com', function (error, response, body) {
-    //   console.log('error:', error); // Print the error if one occurred 
-    //   console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received 
-    //   console.log('body:', body); // Print the HTML for the Google homepage. 
-    // });
-  //   request('http://www.omdbapi.com/?t=' + searchInput + '&y=&plot=short&r=json', function(error, response, body) {
-  //   console.log('error', error); // Print the error if one occurred
-  //   console.log('statusCode:', response && response.statusCode); //Print the response status code if a response was received
-  //   console.log('body:', body); // Print the HTML for the homepage
-  // });
-
-// MY CODE --- Then run a request to the OMDB API with the movie specified
 
 function getMovie () { 
   var queryUrl = "http://www.omdbapi.com/?t=" + searchInput + "&y=&plot=short&r=json";
@@ -132,10 +144,11 @@ if (command == null) {
 
 } else if (command === "spotify-this-song") {
   console.log("spotify info will go here");
+  getSong();
 
 } else if (command === "movie-this") {
   getMovie();
-  console.log("OMDB info will go here");
+  // console.log("OMDB info will go here");
 }
 else {
   command === "do-what-it-says";

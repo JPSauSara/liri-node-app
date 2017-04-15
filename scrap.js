@@ -1,29 +1,82 @@
-// Level 1:
-// Take any movie with a word title (ex: Cinderella) as a Node argument and retrieve the year it was created
+var http = require('http');
+var https = require('https');
 
-// Level 2 (More Challenging):
-// Take a move with multiple words (ex: Forrest Gump) as a Node argument and retrieve the year it was created.
-// ---------------------------------------------------------------------------------------------------------
+/**
+ * Internal method for creating response hollabacks, should not be used on
+ * its own
+ */
+function makeResponse(hollaback) {
+    var chunks = '';
 
-// Include the request npm package (Don't forget to run "npm install request" in this folder first!)
-var request = require("request");
+    return function(response) {
+        response.setEncoding('utf8');
 
-// Grab the movieName which will always be the third node argument.
-var movieName = process.argv[2];
+        response.on('data', function(chunk) {
+            chunks += chunk;
+        });
 
-// Then run a request to the OMDB API with the movie specified
-var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&r=json";
+        response.on('end', function() {
+            var err, json;
 
-// This line is just to help us debug against the actual URL.
-console.log(queryUrl);
+            try {
+                json = JSON.parse( chunks );
+            }
+            catch(e) {
+                err = e;
+                console.log(e);
+            }
 
-request(queryUrl, function(error, response, body) {
+            hollaback(err, json);
+        });
+    };
+}
 
-  // If the request is successful
-  if (!error && response.statusCode === 200) {
+module.exports = {
+    /**
+     * Reverse-lookup a track, artist or album URI
+     *
+     * @param {Object} Options that should be used to do this query
+     *                 `type` and `id` is required
+     * @param {Function} The hollaback that'll be invoked once there's data
+     */
+    lookup: function(opts, hollaback) {
+        var type = opts.type+'s';
+        var query = '/v1/'+type+'/'+opts.id;       
+        this.get(query, hollaback);
+    },
 
-    // Parse the body of the site and recover just the imdbRating
-    // (Note: The syntax below for parsing isn't obvious. Just spend a few moments dissecting it).
-    console.log("Release Year: " + JSON.parse(body).Year);
-  }
-});
+    /**
+     * Search the Spotify library for a track, artist or album
+     *
+     * @param {Object} Options that should be used to do this query
+     *                 `type` and `query` is required
+     * @param {Function} The hollaback that'll be invoked once there's data
+     */
+    search: function(opts, hollaback) {
+        opts.limit = opts.limit || 20;
+        var query = '/v1/search?type='+opts.type+'&q='+opts.query+'&limit='+opts.limit;
+        this.get(query, hollaback);
+    },
+
+    /**
+     * Send a request to the Spotify web service API
+     *
+     * @param {String} The path for this query, see http://developer.spotify.com/en/metadata-api/overview/
+     * @param {Function} The hollaback that'll be invoked once there's data
+     */
+    get: function(query, hollaback) {
+        
+        var opts = {
+            host: "api.spotify.com",
+            path: encodeURI(query),
+            method: "GET",
+            headers: { "Accept": "application/json" }
+        },
+        request = https.request(opts, makeResponse( hollaback ));
+        request.end();
+
+        request.on('error', function (err) {
+            hollaback (err, {});
+        });
+    }
+};
