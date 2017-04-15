@@ -1,7 +1,11 @@
 'use strict';
 
 const command = process.argv[2];
-const searchInput = process.argv[3];
+// const searchInput = process.argv[3];
+const searchInput = process.argv.splice(3).join(' ');
+
+
+const nodeArgs = process.argv;
 
 const fs = require('fs');
 
@@ -21,25 +25,7 @@ const client = new twitter({
     consumer_secret: twitterKeys.consumer_secret,
     access_token_key: twitterKeys.access_token_key,
     access_token_secret: twitterKeys.access_token_secret
-});
-  
-
-// FROM TWITTER PACKAGE DOCUMENTATION
-  // var params = {screen_name: 'nodejs', count: 20};
-
-  // client.get('favorites/list', function(error, tweets, response) {
-  // if(error) throw error;
-  // console.log(tweets);  // The favorites. 
-  // console.log(response);  // Raw response object. 
-  // });
-
-  //THIS RETURNS AN ERROR -- Check your code. There is an error: [object Object] 
-  // var client = new twitter({
-  //   consumer_key: process.env.twitterKeys_CONSUMER_KEY,
-  //   consumer_secret: process.env.twitterKeys_CONSUMER_SECRET,
-  //   access_token_key: process.env.twitterKeys_ACCESS_TOKEN_KEY,
-  //   access_token_secret: process.env.twitterKeys_ACCESS_TOKEN_SECRET
-  // });
+}); 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!! REMOVE COUNT || CHANGE TO 20 !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 var params = { screen_name: 'juliehPaola', count: 5 };
@@ -58,7 +44,7 @@ function getTweets() {
 
 
 // ===================== SPOTIFY COMMAND: spotify-this-song =====================
-  // node liri.js spotify-this-song '<song name here>' / Default = "The Sign" by Ace of Base
+  // node liri.js spotify-this-song '<song name here>' / Default song = "The Sign" by Ace of Base
   // GOAL: This will show the following information about the song in your terminal/bash window
     // Artist(s)
     // The song's name
@@ -67,7 +53,7 @@ function getTweets() {
 
 
 // ===================== IMDB COMMAND: movie-this =====================
-  //  node liri.js movie-this '<movie name here>' / Default = output data for the movie 'Mr. Nobody.'
+  //  node liri.js movie-this '<movie name here>' / Default movie = 'Mr. Nobody.'
   // GOAL: This will output the following information to your terminal/bash window:
     //    * Title of the movie.
     //    * Year the movie came out.
@@ -77,6 +63,52 @@ function getTweets() {
     //    * Plot of the movie.
     //    * Actors in the movie.
     //    * Rotten Tomatoes URL.
+
+var request = require("request");
+
+// ON NPM request PKG documentation :
+    //request('http://www.google.com', function (error, response, body) {
+    //   console.log('error:', error); // Print the error if one occurred 
+    //   console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received 
+    //   console.log('body:', body); // Print the HTML for the Google homepage. 
+    // });
+  //   request('http://www.omdbapi.com/?t=' + searchInput + '&y=&plot=short&r=json', function(error, response, body) {
+  //   console.log('error', error); // Print the error if one occurred
+  //   console.log('statusCode:', response && response.statusCode); //Print the response status code if a response was received
+  //   console.log('body:', body); // Print the HTML for the homepage
+  // });
+
+// MY CODE --- Then run a request to the OMDB API with the movie specified
+
+function getMovie () { 
+  var queryUrl = "http://www.omdbapi.com/?t=" + searchInput + "&y=&plot=short&r=json";
+
+  if (searchInput == null) {
+    searchInput = 'Mr. Nobody';
+  } 
+
+  request(queryUrl, function(error,response,body) {
+    if(!error && response.statusCode === 200) {
+      // console.log("THIS WORKS! Release Year: " + JSON.parse(body).Year);
+      let movieInfo = JSON.parse(body);
+
+      output = ('\nMovie Info \n\nTitle: ' + movieInfo.Title  
+        + '\n\nRelease Date: ' + movieInfo.Released
+        + '\n\nIMDB Rating: ' + movieInfo.imdbRating 
+        + '\n\nProduction Country: ' + movieInfo.Country 
+        + '\n\nLanguage: ' + movieInfo.Language 
+        + '\n\nSynopsis: ' + movieInfo.Plot 
+        + '\n\nActors: ' + movieInfo.Actors 
+        + '\n\nRotten Tomatoes Rating: ' + movieInfo.tomatoRating 
+        + '\n\nLearn more at Rotten Tomatoes: ' + movieInfo.tomatoURL + '\n');
+      console.log(output); 
+
+    } else {
+      console.log("CUT! There is an error: " + error);
+    }
+  }); 
+};
+
 
 // ===================== RANDO COMMAND: do-what-it-says =====================
   // node liri.js do-what-it-says
@@ -88,19 +120,22 @@ function getTweets() {
 // ===================== CALLING COMMANDS =====================  
 
 if (command == null) {
-
-  console.log("Hello! My name is LIRI."
-    + '\n' + "I am a Language Interpretation and Recognition Interface." 
-    + '\n' + "Please enter one of the following commands to get started");
+  console.log("Hello! My name is LIRI. I'm a Language Interpretation and Recognition Interface."
+    + '\n' + "Please enter one of the following commands to get started: "
+    + '\n' + "  my-tweets"
+    + '\n' + "  spotify-this-song [input a song to seach]"
+    + '\n' + "  movie-this [input a movie to search]"
+    + '\n' + "  do-what-it-says");
 
 } else if (command === "my-tweets") {
-  getTweets();
+  getTweets(searchInput);
 
 } else if (command === "spotify-this-song") {
   console.log("spotify info will go here");
 
 } else if (command === "movie-this") {
-  console.log("IMDB info will go here");
+  getMovie();
+  console.log("OMDB info will go here");
 }
 else {
   command === "do-what-it-says";
