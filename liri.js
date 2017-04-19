@@ -2,7 +2,7 @@
 
 const command = process.argv[2];
 // const searchInput = process.argv[3];
-const searchInput = process.argv.splice(3).join(' ');
+var searchInput = process.argv.splice(3).join(' ');
 
 
 const nodeArgs = process.argv;
@@ -52,31 +52,32 @@ function getTweets() {
     // The album that the song is from
 var spotify = require('spotify');
 
-get: function(query, hollaback) // See http://developer.spotify.com/en/metadata-api/overview/ 
 
-
-function getSong() {
-module.exports = {
-     get: function(query, searchInput) {
-        
-        var opts = {
-            host: "api.spotify.com",
-            path: encodeURI(query),
-            method: "GET",
-            headers: { "Accept": "application/json" }
-        },
-        request = https.request(opts, makeResponse( searchInput ));
-        request.end();
-
-        request.on('error', function (err) {
-            hollaback (err, {});
-        });
+function getSong () {
+  console.log(typeof searchInput);
+  if (searchInput === "") {
+    searchInput = 'I want it that Way';
+  };
+  spotify.search({ type: 'track', query: searchInput}, function(err, data) {
+    if ( err ) {
+        console.log('Error occurred: ' + err);
+        return;
     }
+    // Do something with 'data'
 
+    // console.log(JSON.stringify(data, null, 2))
+    var song = data.tracks.items;
 
+    for (var i = 0; 1 < song.length; i++) {
+      console.log(i);
+      console.log("Artist(s):" + song[i].artists.name); 
+      console.log("Song name:" + song[i].name);
+      console.log("Preview song:" + song[i].preview_url);
+      console.log("Album:" + song[i].album.name);
+      console.log("=============================")
+    }
+  });
 }
-};
-
 
 // ===================== IMDB COMMAND: movie-this =====================
   //  node liri.js movie-this '<movie name here>' / Default movie = 'Mr. Nobody.'
